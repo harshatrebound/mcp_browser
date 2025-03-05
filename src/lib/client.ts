@@ -1,9 +1,14 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+import { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
-  ProgressNotification,
+  CallToolResultSchema,
+  ClientRequest,
+  LoggingMessageNotificationSchema,
   ProgressNotificationSchema,
+  ServerNotification,
 } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
 
 export type Status = "connected" | "disconnected" | "error";
 
@@ -11,7 +16,7 @@ export interface Options {
   serverUrl: string;
   proxyUrl?: string;
   authToken?: string;
-  onProgress?: (notification: ProgressNotification) => void;
+  onProgress?: (notification: ServerNotification) => void;
   onStatusChange?: (status: Status) => void;
 }
 
@@ -20,7 +25,7 @@ export class McpClient {
   private transport: SSEClientTransport | null = null;
   private connectionStatus: Status = "disconnected";
   private proxyUrl: URL = new URL("http://localhost:3000/sse");
-
+  private progessToken: number = 0;
   private options: Options;
 
   constructor(options: Options) {
@@ -51,6 +56,11 @@ export class McpClient {
           ProgressNotificationSchema,
           this.options.onProgress,
         );
+
+        this.client.setNotificationHandler(
+          LoggingMessageNotificationSchema,
+          this.options.onProgress,
+        );
       }
     } catch (error) {
       console.error("Failed to connect to MCP server:", error);
@@ -64,21 +74,46 @@ export class McpClient {
     try {
       await this.transport?.close();
       this.connectionStatus = "disconnected";
-      this.options.onStatusChange?.("error");
+      this.options.onStatusChange?.("disconnected");
     } catch (error) {
       console.error("Error disconnecting from MCP server:", error);
       throw error;
     }
   }
 
-  public async cancelRequest(requestId: string): Promise<void> {
-    this.client?.notification({
-      method: "notifications/cancelled",
-      params: { requestId },
+  public async callTool(
+    name: string,
+    params: Record<string, unknown>,
+    signal: AbortSignal,
+  ) {
+    const req = {
+      method: "tools/call",
+      params: {
+        name,
+        arguments: params,
+        _meta: { progressToken: this.progessToken++ },
+      },
+    } as const;
+
+    return await this.makeRequest(req, CallToolResultSchema, {
+      signal,
     });
   }
 
-  public getConnectionStatus(): "connected" | "disconnected" | "error" {
+  public async makeRequest<T extends z.ZodType>(
+    request: ClientRequest,
+    schema: T,
+    options?: RequestOptions,
+  ): Promise<z.output<T>> {
+    if (!this.client) throw new Error("MCP client not connected");
+
+    return await this.client.request(request, schema, {
+      signal: options?.signal,
+      timeout: 60000,
+    });
+  }
+
+  public getConnectionStatus(): Status {
     return this.connectionStatus;
   }
 }
