@@ -5,7 +5,9 @@ A modern React application that provides a user-friendly interface for interacti
 ## 🎥 Demo
 
 <div align="center">
-  <img src="assets/demo.gif" alt="Browser-use MCP Client Demo" width="800"/>
+  <video width="800" controls>
+  <source src="assets/demo.mov" type="video/mov">
+  </video>
 </div>
 
 ## 🚀 Features
