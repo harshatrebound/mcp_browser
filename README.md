@@ -3,12 +3,7 @@
 A modern React application that provides a user-friendly interface for interacting with Model Context Protocol (MCP) servers through Server-Sent Events (SSE).
 
 ## 🎥 Demo
-
-<div align="center">
-  <video width="800" controls>
-  <source src="assets/demo.mov" type="video/mov">
-  </video>
-</div>
+https://github.com/user-attachments/assets/52ab11ad-741f-4506-99ad-9f1972a3aad1
 
 ## 🚀 Features
 
