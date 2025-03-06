@@ -4,7 +4,9 @@ A modern React application that provides a user-friendly interface for interacti
 
 ## 🎥 Demo
 
-<https://github.com/Linzo99/browser-use-mcp-client/demo.mov>
+<div align="center">
+  <img src="assets/demo.gif" alt="Browser-use MCP Client Demo" width="800"/>
+</div>
 
 ## 🚀 Features
 
