@@ -84,7 +84,7 @@ export class McpClient {
   public async callTool(
     name: string,
     params: Record<string, unknown>,
-    signal: AbortSignal,
+    signal?: AbortSignal,
   ) {
     const req = {
       method: "tools/call",

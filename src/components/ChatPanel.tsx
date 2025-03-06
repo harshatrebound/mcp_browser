@@ -75,8 +75,8 @@ export function ChatPanel({
             }`}
           />
           <div className="flex items-center mr-2">
-            <Switch 
-              checked={theme === "dark"} 
+            <Switch
+              checked={theme === "dark"}
               onCheckedChange={toggleTheme}
               className="mx-1"
               iconOn={<Moon className="h-3 w-3 text-blue-300" />}

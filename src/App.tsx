@@ -1,92 +1,34 @@
+import { useMCP } from "@/hooks/useMCP";
 import { MonitorSmartphone } from "lucide-react";
-import { useEffect, useState } from "react";
-import { ChatMessageProps, MessageRole } from "./components/ChatMessage";
+import { useState } from "react";
 import { ChatPanel } from "./components/ChatPanel";
 import { SettingsDialog } from "./components/SettingsDialog";
-import { useMCP } from "./lib/useMCP";
-import { formatLog, StepResult } from "./lib/utils";
-
-const initMessage = {
-  role: "tool" as MessageRole,
-  content: "Welcome. Connect to a Browser-use MCP server to get started.",
-  timestamp: new Date(),
-};
-
-type NotifData = {
-  screenshot: string;
-  result: StepResult;
-};
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [serverUrl, setServerUrl] = useState("http://localhost:8000/sse");
-  const [messages, setMessages] = useState<ChatMessageProps[]>([initMessage]);
-  const [image, setImage] = useState<string | undefined>();
-  const [processingIndex, setProcessingIndex] = useState<number | null>(null);
 
   const {
-    notifications,
-    connect,
-    disconnect,
+    image,
     status,
+    pending,
+    connect,
+    messages,
     sendQuery,
+    addMessage,
+    disconnect,
+    clearMessages,
     cancelRequest,
-    hasActiveRequest,
   } = useMCP({
     serverUrl,
   });
 
-  useEffect(() => {
-    if (!notifications.length) return;
-    const latest = notifications[notifications.length - 1];
-
-    if (latest.method === "notifications/message" && hasActiveRequest) {
-      const { screenshot, result } = latest.params.data as NotifData;
-      const { eval: out, goal } = formatLog(result as StepResult);
-      
-      // Update the processing message instead of replacing it
-      if (processingIndex !== null) {
-        setMessages((prev) => {
-          const newMessages = [...prev];
-          newMessages[processingIndex] = {
-            role: "tool",
-            content: `${out}\n${goal}`,
-            timestamp: new Date()
-          };
-          return newMessages;
-        });
-      }
-      
-      setImage(screenshot);
-    }
-  }, [notifications, hasActiveRequest, processingIndex]);
-
-  const addMessage = (role: MessageRole, content: string) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        role,
-        content,
-        timestamp: new Date(),
-      },
-    ]);
-  };
-
   const handleSendMessage = async (message: string) => {
     addMessage("user", message);
-    addMessage("tool", "Processing Request ...");
-    setProcessingIndex(messages.length + 1);
     try {
-      const response = await sendQuery(message);
-      addMessage("tool", response?.content[0].text as string);
-    } catch (error) {
-      addMessage(
-        "tool",
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-    finally{
-      setProcessingIndex(null);
+      await sendQuery(message);
+    } catch {
+      addMessage("tool", "Error running the agent");
     }
   };
 
@@ -96,15 +38,12 @@ function App() {
       <div className="w-full md:w-96 border-r flex flex-col h-full">
         <ChatPanel
           messages={messages}
-          onSendMessage={handleSendMessage}
-          onCancelRequest={cancelRequest}
-          onClearChat={() => {
-            setMessages([initMessage]);
-            setProcessingIndex(null);
-          }}
           connectionStatus={status}
+          hasActiveRequest={pending}
+          onClearChat={clearMessages}
+          onCancelRequest={cancelRequest}
+          onSendMessage={handleSendMessage}
           onOpenSettings={() => setIsSettingsOpen(true)}
-          hasActiveRequest={hasActiveRequest}
         />
       </div>
 
@@ -136,13 +75,13 @@ function App() {
 
       {/* Settings Dialog */}
       <SettingsDialog
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        serverUrl={serverUrl}
-        onServerUrlChange={setServerUrl}
-        connectionStatus={status}
         onConnect={connect}
+        serverUrl={serverUrl}
+        isOpen={isSettingsOpen}
+        connectionStatus={status}
         onDisconnect={disconnect}
+        onServerUrlChange={setServerUrl}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

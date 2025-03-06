@@ -13,12 +13,14 @@ interface State {
 
 export interface StepResult {
   current_state: State;
-  action: object[];
+  action: Record<string, Record<string, unknown>>[];
+  history?: object[];
 }
 
 export function formatLog(response: StepResult) {
-  let emoji;
+  const action = response.action.find((obj) => obj["done"]);
 
+  let emoji;
   if (response.current_state.evaluation_previous_goal.includes("Success")) {
     emoji = "👍";
   } else if (
@@ -32,7 +34,9 @@ export function formatLog(response: StepResult) {
   const result = {
     eval: `${emoji} Eval: ${response.current_state.evaluation_previous_goal}`,
     memory: `🧠 Memory: ${response.current_state.memory}`,
-    goal: `🎯 Next goal: ${response.current_state.next_goal}`,
+    goal:
+      action?.done?.text || `🎯 Next goal: ${response.current_state.next_goal}`,
+    done: action !== undefined,
   };
 
   return result;

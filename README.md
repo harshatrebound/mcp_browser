@@ -11,6 +11,31 @@ This project demonstrates how to connect to an MCP server directly from a browse
 - Making requests to the server
 - Receiving and displaying notifications
 
+## Project Structure
+
+### 1. Core MCP Client
+- **mcpClient.ts**: Implements the core MCP client functionality using the MCP SDK with SSE transport.
+- **useMcpClient.ts**: React hook for using the MCP client in React components.
+
+### 2. UI Components
+- **ChatMessage.tsx**: For displaying chat messages.
+- **ChatPanel.tsx**: For managing chat interactions.
+- **SettingsDialog.tsx**: For user settings.
+- **ThemeToggle.tsx**: For toggling themes.
+- **theme-provider.tsx**: For providing theme context.
+- **ui**: Contains additional UI components.
+
+### 3. Main Application
+- **App.tsx**: Main application component that integrates all the UI components.
+- Uses Tailwind CSS for styling.
+
+## Supported Features
+- Direct connection to MCP servers using SSE.
+- Authentication via Bearer tokens.
+- Viewing server capabilities.
+- Making requests to the server.
+- Receiving and displaying notifications.
+
 ## Features
 
 - Direct connection to MCP servers using SSE
@@ -55,13 +80,6 @@ This project demonstrates how to connect to an MCP server directly from a browse
    - View the server's capabilities
    - Make requests using the "Make Request" panel
    - View notifications from the server in the "Notifications" panel
-
-## Project Structure
-
-- `src/lib/mcpClient.ts` - Core MCP client implementation
-- `src/lib/useMcpClient.ts` - React hook for using the MCP client
-- `src/components/` - React components for the UI
-- `src/App.tsx` - Main application component
 
 ## Built With
 
