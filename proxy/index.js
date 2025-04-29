@@ -9,15 +9,18 @@ import { fileURLToPath } from "url";
 import mcpProxy from "./mcpProxy.js";
 
 // Determine __dirname equivalent in ES module scope
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// No longer using __dirname for static path
 
 const app = express();
 app.use(cors());
 
 // Serve static files from the Vite build output directory (usually 'dist')
-// Adjust '../../dist' if your proxy/index.js is nested differently relative to the root
-app.use(express.static(path.join(__dirname, '../dist')));
+// Assuming the process runs from the project root (/app on Railway)
+const staticPath = path.join(process.cwd(), 'dist'); // Use process.cwd()
+console.log(`Serving static files from: ${staticPath}`); // Add log
+app.use(express.static(staticPath));
 
 const webAppTransports = [];
 
@@ -71,7 +74,9 @@ app.post("/message", async (req, res) => {
 
 // Serve index.html for any other requests (SPA routing)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+  const indexPath = path.join(process.cwd(), 'dist', 'index.html'); // Use process.cwd()
+  console.log(`Serving index.html from: ${indexPath}`); // Add log
+  res.sendFile(indexPath);
 });
 
 const PORT = process.env.PORT || 3000;
