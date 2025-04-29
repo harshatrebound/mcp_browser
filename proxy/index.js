@@ -17,7 +17,7 @@ app.use(cors());
 
 // Serve static files from the Vite build output directory (usually 'dist')
 // Adjust '../../dist' if your proxy/index.js is nested differently relative to the root
-app.use(express.static(path.join(__dirname, '../../dist')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 const webAppTransports = [];
 
@@ -71,7 +71,7 @@ app.post("/message", async (req, res) => {
 
 // Serve index.html for any other requests (SPA routing)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
