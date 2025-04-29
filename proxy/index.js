@@ -4,10 +4,20 @@ import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import cors from "cors";
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import mcpProxy from "./mcpProxy.js";
+
+// Determine __dirname equivalent in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
+
+// Serve static files from the Vite build output directory (usually 'dist')
+// Adjust '../../dist' if your proxy/index.js is nested differently relative to the root
+app.use(express.static(path.join(__dirname, '../../dist')));
 
 const webAppTransports = [];
 
@@ -57,6 +67,11 @@ app.post("/message", async (req, res) => {
     console.error("Error in /message route:", error);
     res.status(500).json(error);
   }
+});
+
+// Serve index.html for any other requests (SPA routing)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
